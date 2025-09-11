@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><title>Редактирование профиля</title></head>
+<body>
+  <h1>Редактирование профиля</h1>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <p>Имя: <input type="text" name="first_name" value="{{ user_obj.first_name }}"></p>
+    <p>Отчество: <input type="text" name="middle_name" value="{{ user_obj.middle_name }}"></p>
+    <p>Фамилия: <input type="text" name="last_name" value="{{ user_obj.last_name }}"></p>
+    <p>О себе: <br><textarea name="bio" rows="5" cols="40">{{ user_obj.bio }}</textarea></p>
+    <p>Аватар: <input type="file" name="avatar"></p>
+    <button type="submit">Сохранить</button>
+  </form>
+  <p><a href="{% url 'accounts:profile' %}">Назад в профиль</a></p>
+</body>
+</html>

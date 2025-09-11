@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><title>Вход</title></head>
+<body>
+  <h1>Вход</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <p>{{ form.username.label_tag }} {{ form.username }}</p>
+    <p>{{ form.password.label_tag }} {{ form.password }}</p>
+    <button type="submit">Войти</button>
+  </form>
+  <p>Нет аккаунта? <a href="{% url 'accounts:register' %}">Зарегистрироваться</a></p>
+</body>
+</html>
