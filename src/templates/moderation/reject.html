@@ -1,14 +1,18 @@
-<!doctype html>
-<html lang="ru">
-<head><meta charset="utf-8"><title>Отклонение заявки #{{ obj.id }}</title></head>
-<body>
-  <p><a href="{% url 'moderation:detail' pk=obj.id %}">← Назад</a></p>
-  <h1>Отклонить заявку #{{ obj.id }}</h1>
-  <form method="post">
+{% extends "base.html" %}
+{% block title %}Отклонение заявки{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="mb-4">Отклонить заявку #{{ obj.id }}</h1>
+
+  <form method="post" class="card card-body shadow-sm">
     {% csrf_token %}
-    <p>Причина (увидит автор):</p>
-    <p><textarea name="reason" rows="5" cols="60"></textarea></p>
-    <button type="submit">Отклонить</button>
+    <div class="mb-3">
+      <label class="form-label">Причина отклонения</label>
+      <textarea name="reason" rows="5" class="form-control"></textarea>
+    </div>
+    <button class="btn btn-danger">Отклонить</button>
+    <a href="{% url 'moderation:detail' obj.id %}" class="btn btn-outline-secondary">Отмена</a>
   </form>
-</body>
-</html>
+</div>
+{% endblock %}

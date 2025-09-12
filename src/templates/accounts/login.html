@@ -1,15 +1,23 @@
-<!doctype html>
-<html lang="ru">
-<head><meta charset="utf-8"><title>Вход</title></head>
-<body>
-  <h1>Вход</h1>
-  <form method="post">
+{% extends "base.html" %}
+{% block title %}Вход{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="mb-4">Вход</h1>
+
+  <form method="post" class="card card-body shadow-sm">
     {% csrf_token %}
     {{ form.non_field_errors }}
-    <p>{{ form.username.label_tag }} {{ form.username }}</p>
-    <p>{{ form.password.label_tag }} {{ form.password }}</p>
-    <button type="submit">Войти</button>
+    <div class="mb-3">
+      {{ form.username.label_tag }}
+      {{ form.username }}
+    </div>
+    <div class="mb-3">
+      {{ form.password.label_tag }}
+      {{ form.password }}
+    </div>
+    <button class="btn btn-primary">Войти</button>
+    <a href="{% url 'accounts:register' %}" class="btn btn-link">Регистрация</a>
   </form>
-  <p>Нет аккаунта? <a href="{% url 'accounts:register' %}">Зарегистрироваться</a></p>
-</body>
-</html>
+</div>
+{% endblock %}

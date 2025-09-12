@@ -2,53 +2,62 @@
 {% block title %}{{ product.name }}{% if product.kind %} — {{ product.kind }}{% endif %}{% endblock %}
 
 {% block content %}
-  <div class="flex">
-    <div class="product-photo">
+<div class="row g-4">
+  <div class="col-md-5">
+    <div class="border rounded" style="width:100%; max-width:420px; height:420px; overflow:hidden;">
       {% if product.photo %}
-        <img src="{{ product.photo.url }}" alt="{{ product.name }}">
+        <img src="{{ product.photo.url }}" style="width:100%; height:100%; object-fit:cover;">
       {% else %}
-        <span class="muted">Нет фото</span>
-      {% endif %}
-    </div>
-
-    <div class="flex-col" style="flex:1;">
-      <h1 style="margin:0 0 6px 0;">{{ product.name }}{% if product.kind %} — {{ product.kind }}{% endif %}</h1>
-      <div class="muted">Группа: {{ product.get_group_display }}</div>
-
-      <div style="margin-top:8px;">
-        {% for c in product.categories.all %}
-          <span class="pill">{{ c.name }}</span>
-        {% empty %}
-          <span class="muted">Категории не указаны</span>
-        {% endfor %}
-      </div>
-
-      <div class="card" style="margin-top:12px;">
-        <div class="kv">
-          <div class="k">Калории (на 100 г):</div><div class="v">{{ product.kcal }}</div>
-          <div class="k">Белки:</div><div class="v">{{ product.proteins }}</div>
-          <div class="k">Жиры:</div><div class="v">{{ product.fats }}</div>
-          <div class="k">Углеводы:</div><div class="v">{{ product.carbs }}</div>
-        </div>
-      </div>
-
-      {% if request.user.is_authenticated %}
-        <div class="card" style="margin-top:12px;">
-          <h3 style="margin:0 0 8px 0;">Отметить в дневнике</h3>
-          <form method="post" action="{% url 'diary:add' %}">
-            {% csrf_token %}
-            <input type="hidden" name="product_id" value="{{ product.id }}">
-            <div class="flex" style="align-items:center;">
-              <label>Дата: <input class="input input-inline" type="date" name="date" value="{{ today|date:'Y-m-d' }}"></label>
-              <input class="input input-inline" type="number" name="amount_grams" min="1" step="1" placeholder="граммы (опц.)">
-              <input class="input" type="text" name="note" maxlength="240" placeholder="Заметка (опц.)">
-              <button type="submit">Съел(а)</button>
-            </div>
-          </form>
-        </div>
-      {% else %}
-        <a class="btn" href="{% url 'accounts:login' %}?next={{ request.path }}">Войти, чтобы отметить</a>
+        <div class="d-flex align-items-center justify-content-center bg-light h-100 text-muted">Нет фото</div>
       {% endif %}
     </div>
   </div>
+  <div class="col-md-7">
+    <h1 class="h3">{{ product.name }}{% if product.kind %} — {{ product.kind }}{% endif %}</h1>
+    <div class="text-muted mb-2">Группа: {{ product.get_group_display }}</div>
+
+    <div class="mb-2">
+      {% for c in product.categories.all %}
+        <span class="badge text-bg-light border me-1">{{ c.name }}</span>
+      {% empty %}
+        <span class="text-muted">Категории не указаны</span>
+      {% endfor %}
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="row small">
+          <div class="col-6"><strong>Ккал (на 100 г):</strong> {{ product.kcal }}</div>
+          <div class="col-6"><strong>Белки:</strong> {{ product.proteins }}</div>
+          <div class="col-6"><strong>Жиры:</strong> {{ product.fats }}</div>
+          <div class="col-6"><strong>Углеводы:</strong> {{ product.carbs }}</div>
+        </div>
+      </div>
+    </div>
+
+    {% if request.user.is_authenticated %}
+      <form class="row g-2" method="post" action="{% url 'diary:add' %}">
+        {% csrf_token %}
+        <input type="hidden" name="product_id" value="{{ product.id }}">
+        <div class="col-auto">
+          <label class="form-label mb-0 small">Дата</label>
+          <input class="form-control" type="date" name="date" value="{{ today|date:'Y-m-d' }}">
+        </div>
+        <div class="col-auto">
+          <label class="form-label mb-0 small">Граммы</label>
+          <input class="form-control" type="number" name="amount_grams" min="1" step="1">
+        </div>
+        <div class="col">
+          <label class="form-label mb-0 small">Заметка</label>
+          <input class="form-control" type="text" name="note" maxlength="240">
+        </div>
+        <div class="col-auto d-flex align-items-end">
+          <button class="btn btn-primary" type="submit">Съел(а)</button>
+        </div>
+      </form>
+    {% else %}
+      <a class="btn btn-primary" href="{% url 'accounts:login' %}?next={{ request.path }}">Войти, чтобы отметить</a>
+    {% endif %}
+  </div>
+</div>
 {% endblock %}

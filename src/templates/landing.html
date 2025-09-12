@@ -1,26 +1,43 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}О проекте — 400 продуктов{% endblock %}
 
 {% block content %}
-  <div class="grid" style="grid-template-columns: 1.2fr 1fr;">
-    <div class="card">
-      <h2>О проекте</h2>
-      <p>Цель — за 365 дней съесть 400 <strong>разных</strong> продуктов. Ведите дневник, следите за прогрессом, подписывайтесь на друзей.</p>
-      <ul>
-        <li>Каталог продуктов с сортами (например, «Яблоко — Фуджи»).</li>
-        <li>Дневник с календарём и счётчиками прогресса.</li>
-        <li>Лента событий друзей.</li>
-        <li>Заявки на добавление новых продуктов.</li>
-      </ul>
-      {% if request.user.is_authenticated %}
-        <a class="btn" href="{% url 'diary:join' %}">Участвовать в проекте</a>
-      {% else %}
-        <a class="btn" href="{% url 'accounts:register' %}">Участвовать в проекте</a>
-      {% endif %}
-    </div>
-    <div class="card">
-      {% include "includes/progress_widget.html" %}
-      <p class="muted" style="margin-top:8px;">Присоединяйтесь и начните отмечать съеденные продукты.</p>
+<!-- Герой-секция -->
+<header class="masthead" style="min-height:60vh;">
+  <div class="container px-4">
+    <div class="row gx-4 justify-content-center">
+      <div class="col-lg-8 text-center text-white glass">
+        <h1 class="mb-3 fw-bold">400 различных продуктов за год</h1>
+        <p class="lead mb-4">Отмечайте съеденное, следите за прогрессом, подписывайтесь на друзей.</p>
+        {% if request.user.is_authenticated %}
+          <a class="btn btn-primary btn-lg" href="{% url 'diary:join' %}">Участвовать в проекте</a>
+        {% else %}
+          <a class="btn btn-primary btn-lg" href="{% url 'accounts:register' %}">Участвовать в проекте</a>
+        {% endif %}
+      </div>
     </div>
   </div>
+</header>
+
+<!-- Короткая поясняющая секция -->
+<section class="py-5">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-md-6">
+        <h2>Как это работает</h2>
+        <ul class="mb-0">
+          <li>Каталог с сортами (например: «Яблоко — Фуджи»).</li>
+          <li>Дневник и календарь на месяц.</li>
+          <li>Лента активности друзей.</li>
+          <li>Заявки на добавление новых продуктов.</li>
+        </ul>
+      </div>
+      <div class="col-md-6">
+        {% include "includes/progress_widget.html" %}
+        <p class="text-muted mt-2">Присоединяйтесь и начните отмечать продукты.</p>
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock %}

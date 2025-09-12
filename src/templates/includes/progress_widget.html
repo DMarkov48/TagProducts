@@ -1,9 +1,9 @@
 {% if progress %}
   {% with unique=progress.0 target=progress.1 passed=progress.2 total=progress.3 %}
-    <div style="padding:8px;border:1px solid #ddd;border-radius:10px;display:inline-block;">
+    <div class="alert alert-info mb-0">
       <strong>Прогресс:</strong> {{ unique }}/{{ target }} •
       <strong>Дни:</strong> {{ passed }}/{{ total }}
-      <a href="{% url 'diary:month' %}" style="margin-left:6px;">Календарь</a>
+      <a class="ms-2" href="{% url 'diary:month' %}">Календарь</a>
     </div>
   {% endwith %}
 {% endif %}

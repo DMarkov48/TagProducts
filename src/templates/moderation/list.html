@@ -1,22 +1,31 @@
-<!doctype html>
-<html lang="ru">
-<head><meta charset="utf-8"><title>Модерация заявок</title></head>
-<body>
-  <p><a href="/">← На главную</a> | <a href="?status=pending">На рассмотрении</a> | <a href="?status=approved">Одобрено</a> | <a href="?status=rejected">Отклонено</a></p>
-  <h1>Заявки ({{ status }})</h1>
+{% extends "base.html" %}
+{% block title %}Модерация заявок{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="mb-4">Заявки ({{ status }})</h1>
+
+  <div class="mb-3">
+    <a href="?status=pending" class="btn btn-outline-secondary btn-sm {% if status == 'pending' %}active{% endif %}">На рассмотрении</a>
+    <a href="?status=approved" class="btn btn-outline-success btn-sm {% if status == 'approved' %}active{% endif %}">Одобрено</a>
+    <a href="?status=rejected" class="btn btn-outline-danger btn-sm {% if status == 'rejected' %}active{% endif %}">Отклонено</a>
+  </div>
+
   {% if rows %}
-    <ul>
+    <div class="list-group shadow-sm">
       {% for r in rows %}
-        <li>
-          <a href="{% url 'moderation:detail' pk=r.id %}">
-            {{ r.name }}{% if r.kind %} — {{ r.kind }}{% endif %} ({{ r.get_status_display }})
-          </a>
-          — {{ r.user.email }} — {{ r.created_at|date:"d.m.Y H:i" }}
-        </li>
+        <a href="{% url 'moderation:detail' r.id %}" class="list-group-item list-group-item-action">
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">{{ r.name }}{% if r.kind %} — {{ r.kind }}{% endif %}</h5>
+            <small class="text-muted">{{ r.created_at|date:"d.m.Y H:i" }}</small>
+          </div>
+          <p class="mb-1">Автор: {{ r.user.email }}</p>
+          <small class="text-muted">Статус: {{ r.get_status_display }}</small>
+        </a>
       {% endfor %}
-    </ul>
+    </div>
   {% else %}
-    <p>Нет заявок.</p>
+    <div class="alert alert-info">Нет заявок.</div>
   {% endif %}
-</body>
-</html>
+</div>
+{% endblock %}

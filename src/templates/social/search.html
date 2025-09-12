@@ -1,41 +1,74 @@
-<!doctype html>
-<html lang="ru">
-<head><meta charset="utf-8"><title>Поиск пользователей</title></head>
-<body>
-  <p><a href="/">← На главную</a> | <a href="{% url 'social:following' %}">Мои подписки</a> | <a href="{% url 'social:feed' %}">Лента</a></p>
-  <h1>Найти пользователей</h1>
+{% extends "base.html" %}
+{% block title %}Поиск пользователей{% endblock %}
 
-  <form method="get">
-    <input type="text" name="q" placeholder="Имя, фамилия, e-mail" value="{{ q }}">
-    <button type="submit">Искать</button>
-  </form>
+{% block topbar %}
+<div class="bg-light border-top">
+  <div class="container py-2">
+    <form method="get" class="row g-2 align-items-center">
+      <div class="col-md-8">
+        <input class="form-control" type="text" name="q" placeholder="Имя, фамилия или e-mail" value="{{ q }}">
+      </div>
+      <div class="col-md-4">
+        <button class="btn btn-primary w-100" type="submit">Искать</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
 
-  {% if q and not users %}
-    <p>Никого не найдено.</p>
+{% block content %}
+<div class="container py-4">
+  <h1 class="mb-3">Найти пользователей</h1>
+
+  {% if q %}
+    <p class="text-muted">Запрос: «{{ q }}»</p>
   {% endif %}
 
-  <ul>
-    {% for u in users %}
-      <li>
-        {% if u.avatar %}<img src="{{ u.avatar.url }}" width="40">{% endif %}
-        {{ u.email }}
-        {% if u.first_name or u.last_name or u.middle_name %}
-          — {{ u.first_name }} {{ u.middle_name }} {{ u.last_name }}
-        {% endif %}
+  {% if users %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+      {% for u in users %}
+        <div class="col">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body d-flex">
+              {% if u.avatar %}
+                <img src="{{ u.avatar.url }}" class="rounded-circle me-3" width="56" height="56" style="object-fit:cover;">
+              {% else %}
+                <div class="rounded-circle bg-light border me-3 d-flex align-items-center justify-content-center" style="width:56px;height:56px;">
+                  <span class="text-muted">—</span>
+                </div>
+              {% endif %}
 
-        {% if u.id in following_ids %}
-          <form method="post" action="{% url 'social:unfollow' user_id=u.id %}" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit">Отписаться</button>
-          </form>
-        {% else %}
-          <form method="post" action="{% url 'social:follow' user_id=u.id %}" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit">Подписаться</button>
-          </form>
-        {% endif %}
-      </li>
-    {% endfor %}
-  </ul>
-</body>
-</html>
+              <div class="flex-grow-1">
+                <div class="fw-semibold">
+                  {{ u.first_name }} {{ u.middle_name }} {{ u.last_name }}
+                </div>
+                <div class="text-muted small">{{ u.email }}</div>
+              </div>
+
+              <div class="ms-2">
+                {% if u.id in following_ids %}
+                  <form method="post" action="{% url 'social:unfollow' user_id=u.id %}">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-danger">Отписаться</button>
+                  </form>
+                {% else %}
+                  <form method="post" action="{% url 'social:follow' user_id=u.id %}">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-primary">Подписаться</button>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    {% if q %}
+      <div class="alert alert-warning">По запросу ничего не найдено.</div>
+    {% else %}
+      <div class="alert alert-info">Введите запрос, чтобы найти пользователей.</div>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

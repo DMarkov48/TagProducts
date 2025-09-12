@@ -2,41 +2,56 @@
 {% block title %}Лента{% endblock %}
 
 {% block topbar %}
-  <div class="container" style="padding:10px 16px; border-top:1px solid var(--border); background:#fff;">
-    <form method="get" class="flex" style="align-items:center;">
-      <input class="input" style="max-width:360px;" type="text" name="q" placeholder="Искать пользователя (перейдёт в поиск)">
-      <input class="input input-inline" type="date" name="date" value="{{ date_q }}">
-      <button type="submit">Показать</button>
-      <a class="btn-outline" href="{% url 'social:following' %}">Мои подписки</a>
+<div class="bg-light border-top">
+  <div class="container py-2">
+    <form method="get" class="row g-2 align-items-center">
+      <div class="col-md-6">
+        <input class="form-control" type="text" name="q" placeholder="Поиск пользователя" value="{{ request.GET.q }}">
+      </div>
+      <div class="col-md-3">
+        <select name="filter" class="form-select">
+          <option value="">Все</option>
+          <option value="subs" {% if request.GET.filter == "subs" %}selected{% endif %}>Мои подписки</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-primary w-100">Найти</button>
+      </div>
     </form>
   </div>
-  <script>
-    // перенаправим на страницу поиска пользователей при вводе q
-    (function(){
-      const form = document.currentScript.previousElementSibling;
-      form.addEventListener('submit', function(e){
-        const q = form.querySelector('input[name="q"]').value.trim();
-        if(q){ e.preventDefault(); window.location.href = "{% url 'social:search' %}?q=" + encodeURIComponent(q); }
-      });
-    })();
-  </script>
+</div>
 {% endblock %}
 
 {% block content %}
-  <div class="grid" style="grid-template-columns: 1fr;">
-    {% if events %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Лента</h1>
+    <div>
+      <a href="{% url 'social:following' %}" class="btn btn-sm btn-outline-secondary">Мои подписки</a>
+    </div>
+  </div>
+
+  {% if events %}
+    <div class="list-group">
       {% for e in events %}
-        <div class="card">
-          <div class="muted"><strong>{{ e.user.email }}</strong> — {{ e.created_at|date:"d.m.Y H:i" }}</div>
+        <div class="list-group-item">
+          <div class="d-flex justify-content-between">
+            <strong>{{ e.user.get_full_name|default:e.user.email }}</strong>
+            <small class="text-muted">{{ e.created_at|date:"d.m.Y H:i" }}</small>
+          </div>
           {% if e.type == "entry_created" %}
-            <div>Добавил(а): <em>{{ e.payload.product_name }}</em>{% if e.payload.kind %} — {{ e.payload.kind }}{% endif %} ({{ e.payload.date }})</div>
-          {% else %}
-            <div>{{ e.type }}</div>
+            <p class="mb-1">
+              Добавил продукт 
+              <a href="{% url 'products:detail' slug=e.payload.product_id %}">
+                {{ e.payload.product_name }}{% if e.payload.kind %} — {{ e.payload.kind }}{% endif %}
+              </a>
+            </p>
           {% endif %}
         </div>
       {% endfor %}
-    {% else %}
-      <p>Событий нет.</p>
-    {% endif %}
-  </div>
+    </div>
+  {% else %}
+    <div class="alert alert-info">Событий пока нет.</div>
+  {% endif %}
+</div>
 {% endblock %}

@@ -1,43 +1,49 @@
-<!doctype html>
-<html lang="ru">
-<head><meta charset="utf-8"><title>Заявка #{{ obj.id }}</title></head>
-<body>
-  <p><a href="{% url 'moderation:list' %}">← К списку заявок</a></p>
-  <h1>Заявка #{{ obj.id }}: {{ obj.name }}{% if obj.kind %} — {{ obj.kind }}{% endif %}</h1>
-  <p>Статус: <strong>{{ obj.get_status_display }}</strong></p>
-  <p>Автор: {{ obj.user.email }}</p>
-  {% if obj.photo %}<p><img src="{{ obj.photo.url }}" width="200"></p>{% endif %}
+{% extends "base.html" %}
+{% block title %}Заявка #{{ obj.id }}{% endblock %}
 
-  <form method="post">
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-    <p>{{ form.name.label_tag }} {{ form.name }}</p>
-    <p>{{ form.kind.label_tag }} {{ form.kind }}</p>
-    <p>{{ form.group.label_tag }} {{ form.group }}</p>
-    <p>{{ form.kcal.label_tag }} {{ form.kcal }}</p>
-    <p>{{ form.proteins.label_tag }} {{ form.proteins }}</p>
-    <p>{{ form.fats.label_tag }} {{ form.fats }}</p>
-    <p>{{ form.carbs.label_tag }} {{ form.carbs }}</p>
-    <p>{{ form.categories_text.label_tag }} {{ form.categories_text }}</p>
-    <p>{{ form.status.label_tag }} {{ form.status }}</p>
-    <button type="submit">Сохранить изменения</button>
-  </form>
+{% block content %}
+<div class="container py-4">
+  <h1 class="mb-3">Заявка #{{ obj.id }}: {{ obj.name }}{% if obj.kind %} — {{ obj.kind }}{% endif %}</h1>
 
-  {% if obj.status != "approved" %}
-    <form method="post" action="{% url 'moderation:approve' pk=obj.id %}" style="margin-top:10px;">
-      {% csrf_token %}
-      <button type="submit">Одобрить и создать продукт</button>
-    </form>
-  {% endif %}
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card mb-3">
+        {% if obj.photo %}
+          <img src="{{ obj.photo.url }}" class="card-img-top" style="max-height:250px; object-fit:cover;">
+        {% endif %}
+        <div class="card-body">
+          <p><strong>Автор:</strong> {{ obj.user.email }}</p>
+          <p><strong>Статус:</strong> {{ obj.get_status_display }}</p>
+          <p><strong>Комментарий:</strong><br>{{ obj.comment|default:"—" }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <form method="post" class="card card-body shadow-sm">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form %}
+          <div class="mb-3">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+            {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+        {% endfor %}
+        <button class="btn btn-primary">Сохранить изменения</button>
+      </form>
 
-  {% if obj.status != "rejected" %}
-    <form method="post" action="{% url 'moderation:reject' pk=obj.id %}" style="margin-top:10px;">
-      {% csrf_token %}
-      <button type="submit">Отклонить</button>
-    </form>
-  {% endif %}
+      {% if obj.status != "approved" %}
+        <form method="post" action="{% url 'moderation:approve' obj.id %}" class="mt-3">
+          {% csrf_token %}
+          <button class="btn btn-success">Одобрить и создать продукт</button>
+        </form>
+      {% endif %}
 
-  <h3>Комментарий автора</h3>
-  <pre>{{ obj.comment|default:"—" }}</pre>
-</body>
-</html>
+      {% if obj.status != "rejected" %}
+        <a href="{% url 'moderation:reject' obj.id %}" class="btn btn-danger mt-2">Отклонить</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,19 +1,23 @@
-<!doctype html>
-<html lang="ru">
-<head><meta charset="utf-8"><title>Регистрация</title></head>
-<body>
-  <h1>Регистрация</h1>
-  <form method="post">
+{% extends "base.html" %}
+{% block title %}Регистрация{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="mb-4">Регистрация</h1>
+
+  <form method="post" class="card card-body shadow-sm">
     {% csrf_token %}
     {{ form.non_field_errors }}
-    <p>{{ form.email.label_tag }} {{ form.email }}</p>
-    <p>{{ form.first_name.label_tag }} {{ form.first_name }}</p>
-    <p>{{ form.middle_name.label_tag }} {{ form.middle_name }}</p>
-    <p>{{ form.last_name.label_tag }} {{ form.last_name }}</p>
-    <p>{{ form.password1.label_tag }} {{ form.password1 }}</p>
-    <p>{{ form.password2.label_tag }} {{ form.password2 }}</p>
-    <button type="submit">Создать аккаунт</button>
+    {% for field in form %}
+      <div class="mb-3">
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+      </div>
+    {% endfor %}
+    <button class="btn btn-primary">Создать аккаунт</button>
+    <a href="{% url 'accounts:login' %}" class="btn btn-link">Уже есть аккаунт?</a>
   </form>
-  <p>Уже есть аккаунт? <a href="{% url 'accounts:login' %}">Войти</a></p>
-</body>
-</html>
+</div>
+{% endblock %}

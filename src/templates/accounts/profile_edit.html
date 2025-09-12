@@ -1,17 +1,23 @@
-<!doctype html>
-<html lang="ru">
-<head><meta charset="utf-8"><title>Редактирование профиля</title></head>
-<body>
-  <h1>Редактирование профиля</h1>
-  <form method="post" enctype="multipart/form-data">
+{% extends "base.html" %}
+{% block title %}Редактировать профиль{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="mb-4">Редактировать профиль</h1>
+
+  <form method="post" enctype="multipart/form-data" class="card card-body shadow-sm">
     {% csrf_token %}
-    <p>Имя: <input type="text" name="first_name" value="{{ user_obj.first_name }}"></p>
-    <p>Отчество: <input type="text" name="middle_name" value="{{ user_obj.middle_name }}"></p>
-    <p>Фамилия: <input type="text" name="last_name" value="{{ user_obj.last_name }}"></p>
-    <p>О себе: <br><textarea name="bio" rows="5" cols="40">{{ user_obj.bio }}</textarea></p>
-    <p>Аватар: <input type="file" name="avatar"></p>
-    <button type="submit">Сохранить</button>
+    {{ form.non_field_errors }}
+    {% for field in form %}
+      <div class="mb-3">
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+      </div>
+    {% endfor %}
+    <button class="btn btn-primary">Сохранить</button>
+    <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">Отмена</a>
   </form>
-  <p><a href="{% url 'accounts:profile' %}">Назад в профиль</a></p>
-</body>
-</html>
+</div>
+{% endblock %}
