@@ -1,17 +1,29 @@
-<!doctype html>
-<html lang="ru">
-<head><meta charset="utf-8"><title>Профиль</title></head>
-<body>
-  <h1>Профиль</h1>
-  {% if user_obj.avatar %}
-    <p><img src="{{ user_obj.avatar.url }}" alt="Аватар" width="120"></p>
-  {% endif %}
-  <p><strong>E-mail:</strong> {{ user_obj.email }}</p>
-  <p><strong>Имя:</strong> {{ user_obj.first_name }} {{ user_obj.middle_name }} {{ user_obj.last_name }}</p>
-  <p><strong>О себе:</strong> {{ user_obj.bio|default:"—" }}</p>
-  <p>
-    <a href="{% url 'accounts:profile_edit' %}">Изменить профиль</a> |
-    <a href="{% url 'accounts:logout' %}">Выйти</a>
-  </p>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Личный кабинет{% endblock %}
+
+{% block content %}
+  <div class="grid" style="grid-template-columns: 260px 1fr;">
+    <div class="card">
+      <div style="display:flex; justify-content:center;">
+        {% if user_obj.avatar %}
+          <img src="{{ user_obj.avatar.url }}" width="180" height="180" style="border-radius:12px; object-fit:cover; border:1px solid var(--border);">
+        {% else %}
+          <div style="width:180px;height:180px;border-radius:12px;border:1px solid var(--border); background:#fff;"></div>
+        {% endif %}
+      </div>
+      <div class="kv" style="margin-top:10px;">
+        <div class="k">E-mail</div><div class="v">{{ user_obj.email }}</div>
+        <div class="k">Имя</div><div class="v">{{ user_obj.first_name }} {{ user_obj.middle_name }} {{ user_obj.last_name }}</div>
+      </div>
+      <div style="margin-top:10px;">
+        <a class="btn" href="{% url 'accounts:profile_edit' %}">Изменить</a>
+        <a class="btn-outline" href="{% url 'accounts:logout' %}">Выйти</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0;">О себе</h2>
+      <p>{{ user_obj.bio|default:"—" }}</p>
+    </div>
+  </div>
+{% endblock %}

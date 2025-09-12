@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}О проекте — 400 продуктов{% endblock %}
+
+{% block content %}
+  <div class="grid" style="grid-template-columns: 1.2fr 1fr;">
+    <div class="card">
+      <h2>О проекте</h2>
+      <p>Цель — за 365 дней съесть 400 <strong>разных</strong> продуктов. Ведите дневник, следите за прогрессом, подписывайтесь на друзей.</p>
+      <ul>
+        <li>Каталог продуктов с сортами (например, «Яблоко — Фуджи»).</li>
+        <li>Дневник с календарём и счётчиками прогресса.</li>
+        <li>Лента событий друзей.</li>
+        <li>Заявки на добавление новых продуктов.</li>
+      </ul>
+      {% if request.user.is_authenticated %}
+        <a class="btn" href="{% url 'diary:join' %}">Участвовать в проекте</a>
+      {% else %}
+        <a class="btn" href="{% url 'accounts:register' %}">Участвовать в проекте</a>
+      {% endif %}
+    </div>
+    <div class="card">
+      {% include "includes/progress_widget.html" %}
+      <p class="muted" style="margin-top:8px;">Присоединяйтесь и начните отмечать съеденные продукты.</p>
+    </div>
+  </div>
+{% endblock %}

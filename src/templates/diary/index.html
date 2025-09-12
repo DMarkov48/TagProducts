@@ -1,45 +1,49 @@
-<!doctype html>
-<html lang="ru">
-<head><meta charset="utf-8"><title>Дневник</title></head>
-<body>
-  <h1>Дневник</h1>
+{% extends "base.html" %}
+{% block title %}Дневник{% endblock %}
 
-  <p><strong>Прогресс:</strong> {{ unique_count }}/{{ target }} уникальных продуктов</p>
-  <p><strong>Дни участия:</strong> {{ days_elapsed }}/{{ days_total }}</p>
+{% block content %}
+  <div class="flex">
+    <div class="main">
+      <div class="card">
+        <h2 style="margin:0 0 6px 0;">Прогресс</h2>
+        <div>Уникальные продукты: <strong>{{ unique_count }}</strong> из {{ target }}</div>
+        <div>Дни в проекте: <strong>{{ days_elapsed }}</strong> из {{ days_total }}</div>
+      </div>
 
-  <p>
-    <a href="{% url 'diary:join' %}">Вступить в проект</a>
-    <!-- кнопка просто создаёт челлендж, если его ещё нет -->
-  </p>
+      <div class="card" style="margin-top:12px;">
+        <form method="get" class="flex" style="align-items:center;">
+          <label>Дата: <input class="input input-inline" type="date" name="date" value="{{ current_date|date:'Y-m-d' }}"></label>
+          <button type="submit">Показать</button>
+        </form>
+      </div>
 
-  <form method="get">
-    <label>Дата:
-      <input type="date" name="date" value="{{ current_date|date:'Y-m-d' }}">
-    </label>
-    <button type="submit">Показать</button>
-  </form>
+      <div class="card" style="margin-top:12px;">
+        <h2 style="margin-top:0;">Записи за {{ current_date|date:'d.m.Y' }}</h2>
+        {% if entries %}
+          <ul>
+            {% for e in entries %}
+              <li style="margin-bottom:6px;">
+                {{ e.product.name }}{% if e.product.kind %} — {{ e.product.kind }}{% endif %}
+                {% if e.amount_grams %} ({{ e.amount_grams }} г){% endif %}
+                {% if e.note %} — {{ e.note }}{% endif %}
+                <form method="post" action="{% url 'diary:delete' entry_id=e.id %}" style="display:inline;">
+                  {% csrf_token %}
+                  <button class="btn-outline" type="submit">Удалить</button>
+                </form>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted">На эту дату записей нет.</p>
+        {% endif %}
+      </div>
+    </div>
 
-  <h2>Записи за {{ current_date|date:'d.m.Y' }}</h2>
-
-  {% if entries %}
-    <ul>
-      {% for e in entries %}
-        <li>
-          {% if e.product.photo %}<img src="{{ e.product.photo.url }}" width="60">{% endif %}
-          {{ e.product.name }}{% if e.product.kind %} — {{ e.product.kind }}{% endif %}
-          {% if e.amount_grams %} ({{ e.amount_grams }} г){% endif %}
-          {% if e.note %} — {{ e.note }}{% endif %}
-          <form method="post" action="{% url 'diary:delete' entry_id=e.id %}" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit">Удалить</button>
-          </form>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>На эту дату записей нет.</p>
-  {% endif %}
-
-  <p><a href="/">← На главную</a></p>
-</body>
-</html>
+    <aside class="sidebar">
+      <div class="card">
+        <h3 style="margin-top:0;">Календарь</h3>
+        <p><a class="btn-outline" href="{% url 'diary:month' %}">Открыть календарь месяца</a></p>
+      </div>
+    </aside>
+  </div>
+{% endblock %}

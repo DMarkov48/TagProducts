@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+import datetime
 
 from .models import Follow, Event
 
@@ -48,6 +49,22 @@ def unfollow(request, user_id):
     messages.info(request, f"Вы отписались от {target.email}.")
     next_url = request.META.get("HTTP_REFERER") or reverse("social:search")
     return redirect(next_url)
+
+def feed(request):
+    followees = Follow.objects.filter(follower=request.user).values_list("followee_id", flat=True)
+    user_ids = list(followees) + [request.user.id]
+    events = (Event.objects.filter(user_id__in=user_ids).select_related("user"))
+
+    date_str = request.GET.get("date")
+    if date_str:
+        try:
+            d = datetime.date.fromisoformat(date_str)
+            events = events.filter(created_at__date=d)
+        except ValueError:
+            pass
+
+    events = events.order_by("-created_at")[:200]
+    return render(request, "social/feed.html", {"events": events, "date_q": date_str or ""})
 
 
 @login_required

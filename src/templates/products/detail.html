@@ -1,53 +1,54 @@
-<!doctype html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8">
-  <title>{{ product.name }}{% if product.kind %} — {{ product.kind }}{% endif %}</title>
-</head>
-<body>
-  <p><a href="{% url 'products:list' %}">← К каталогу</a></p>
+{% extends "base.html" %}
+{% block title %}{{ product.name }}{% if product.kind %} — {{ product.kind }}{% endif %}{% endblock %}
 
-  <h1>{{ product.name }}{% if product.kind %} — {{ product.kind }}{% endif %}</h1>
+{% block content %}
+  <div class="flex">
+    <div class="product-photo">
+      {% if product.photo %}
+        <img src="{{ product.photo.url }}" alt="{{ product.name }}">
+      {% else %}
+        <span class="muted">Нет фото</span>
+      {% endif %}
+    </div>
 
-  {% if product.photo %}
-    <p><img src="{{ product.photo.url }}" alt="{{ product.name }}" width="240"></p>
-  {% endif %}
+    <div class="flex-col" style="flex:1;">
+      <h1 style="margin:0 0 6px 0;">{{ product.name }}{% if product.kind %} — {{ product.kind }}{% endif %}</h1>
+      <div class="muted">Группа: {{ product.get_group_display }}</div>
 
-  <p><strong>Категории:</strong>
-    {% for c in product.categories.all %}
-      {{ c.name }}{% if not forloop.last %}, {% endif %}
-    {% empty %}
-      — 
-    {% endfor %}
-  </p>
+      <div style="margin-top:8px;">
+        {% for c in product.categories.all %}
+          <span class="pill">{{ c.name }}</span>
+        {% empty %}
+          <span class="muted">Категории не указаны</span>
+        {% endfor %}
+      </div>
 
-  <p><strong>Пищевая ценность на 100г:</strong></p>
-  <ul>
-    <li>Калории: {{ product.kcal }}</li>
-    <li>Белки: {{ product.proteins }}</li>
-    <li>Жиры: {{ product.fats }}</li>
-    <li>Углеводы: {{ product.carbs }}</li>
-  </ul>
+      <div class="card" style="margin-top:12px;">
+        <div class="kv">
+          <div class="k">Калории (на 100 г):</div><div class="v">{{ product.kcal }}</div>
+          <div class="k">Белки:</div><div class="v">{{ product.proteins }}</div>
+          <div class="k">Жиры:</div><div class="v">{{ product.fats }}</div>
+          <div class="k">Углеводы:</div><div class="v">{{ product.carbs }}</div>
+        </div>
+      </div>
 
-  <hr>
-
-  {% if request.user.is_authenticated %}
-    <h3>Отметить в дневнике</h3>
-    <form method="post" action="{% url 'diary:add' %}">
-      {% csrf_token %}
-      <input type="hidden" name="product_id" value="{{ product.id }}">
-      <p>
-        Дата: <input type="date" name="date" value="{{ today|date:'Y-m-d' }}">
-        <small>(оставьте как есть, чтобы отметить сегодня)</small>
-      </p>
-      <p>Количество, г (необязательно): <input type="number" name="amount_grams" min="1" step="1"></p>
-      <p>Заметка (необязательно): <input type="text" name="note" maxlength="240"></p>
-      <button type="submit">Съел(а)</button>
-    </form>
-    <p><a href="{% url 'diary:index' %}">Перейти в дневник</a></p>
-  {% else %}
-    <p><a href="{% url 'accounts:login' %}?next={{ request.path }}">Войдите</a>, чтобы отмечать продукты в дневнике.</p>
-  {% endif %}
-
-</body>
-</html>
+      {% if request.user.is_authenticated %}
+        <div class="card" style="margin-top:12px;">
+          <h3 style="margin:0 0 8px 0;">Отметить в дневнике</h3>
+          <form method="post" action="{% url 'diary:add' %}">
+            {% csrf_token %}
+            <input type="hidden" name="product_id" value="{{ product.id }}">
+            <div class="flex" style="align-items:center;">
+              <label>Дата: <input class="input input-inline" type="date" name="date" value="{{ today|date:'Y-m-d' }}"></label>
+              <input class="input input-inline" type="number" name="amount_grams" min="1" step="1" placeholder="граммы (опц.)">
+              <input class="input" type="text" name="note" maxlength="240" placeholder="Заметка (опц.)">
+              <button type="submit">Съел(а)</button>
+            </div>
+          </form>
+        </div>
+      {% else %}
+        <a class="btn" href="{% url 'accounts:login' %}?next={{ request.path }}">Войти, чтобы отметить</a>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

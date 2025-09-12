@@ -1,11 +1,11 @@
 from django.contrib import admin
 from django.urls import path, include
-from django.http import HttpResponse
 from django.conf import settings
 from django.conf.urls.static import static
+from django.shortcuts import render
 
 def landing(request):
-    return HttpResponse("<h1>400 продуктов в год</h1><p>Добро пожаловать!</p>")
+    return render(request, "landing.html")
 
 urlpatterns = [
     path("admin/", admin.site.urls),

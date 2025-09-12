@@ -1,24 +1,31 @@
-<!doctype html>
-<html lang="ru">
-<head><meta charset="utf-8"><title>Мои подписки</title></head>
-<body>
-  <p><a href="/">← На главную</a> | <a href="{% url 'social:search' %}">Найти пользователей</a> | <a href="{% url 'social:feed' %}">Лента</a></p>
+{% extends "base.html" %}
+{% block title %}Мои подписки{% endblock %}
+
+{% block content %}
   <h1>Мои подписки</h1>
   {% if rows %}
-    <ul>
+    <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
       {% for r in rows %}
-        <li>
-          {% if r.followee.avatar %}<img src="{{ r.followee.avatar.url }}" width="40">{% endif %}
-          {{ r.followee.email }}
-          <form method="post" action="{% url 'social:unfollow' user_id=r.followee.id %}" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit">Отписаться</button>
-          </form>
-        </li>
+        <div class="card">
+          <div class="flex" style="align-items:center;">
+            {% if r.followee.avatar %}<img src="{{ r.followee.avatar.url }}" width="48" height="48" style="border-radius:50%; object-fit:cover;">{% else %}
+              <div style="width:48px;height:48px;border-radius:50%;border:1px solid var(--border); background:#fff;"></div>
+            {% endif %}
+            <div>
+              <div><strong>{{ r.followee.email }}</strong></div>
+              <div class="muted">{{ r.followee.first_name }} {{ r.followee.middle_name }} {{ r.followee.last_name }}</div>
+            </div>
+            <div style="margin-left:auto;">
+              <form method="post" action="{% url 'social:unfollow' user_id=r.followee.id %}">
+                {% csrf_token %}
+                <button class="btn-outline" type="submit">Отписаться</button>
+              </form>
+            </div>
+          </div>
+        </div>
       {% endfor %}
-    </ul>
+    </div>
   {% else %}
     <p>Вы ни на кого не подписаны.</p>
   {% endif %}
-</body>
-</html>
+{% endblock %}

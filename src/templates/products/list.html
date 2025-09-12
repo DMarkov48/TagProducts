@@ -1,59 +1,57 @@
-<!doctype html>
-<html lang="ru">
-<head><meta charset="utf-8"><title>Каталог продуктов</title></head>
-<body>
-  <p><a href="{% url 'moderation:submit' %}">Не нашли продукт? Предложить новый →</a></p>
+{% extends "base.html" %}
+{% block title %}Каталог продуктов{% endblock %}
 
-  <h1>Каталог продуктов</h1>
+{% block topbar %}
+  <div class="container" style="padding:10px 16px; border-top:1px solid var(--border); background:#fff;">
+    <form method="get" class="flex" style="align-items:center;">
+      <input class="input" style="max-width:380px;" type="text" name="q" placeholder="Поиск продуктов" value="{{ q }}">
+      <select class="input input-inline" name="cat">
+        <option value="">Все категории</option>
+        {% for c in categories %}
+          <option value="{{ c.slug }}" {% if current_cat == c.slug %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit">Найти</button>
+      <a class="btn-outline" href="{% url 'moderation:submit' %}">Предложить продукт</a>
+    </form>
+  </div>
+{% endblock %}
 
-  <form method="get" style="margin-bottom: 1rem;">
-    <input type="text" name="q" placeholder="Поиск по названию" value="{{ q }}">
-    <select name="cat">
-      <option value="">Все категории</option>
-      {% for c in categories %}
-        <option value="{{ c.slug }}" {% if current_cat == c.slug %}selected{% endif %}>{{ c.name }}</option>
-      {% endfor %}
-    </select>
-    <button type="submit">Найти</button>
-  </form>
+{% block content %}
+  {% include "includes/progress_widget.html" %}
+  <div class="grid products" style="margin-top:16px;">
+    {% for item in page_obj.object_list %}
+      <div class="card">
+        <a href="{% url 'products:detail' slug=item.slug %}"><h3>{{ item.name }}{% if item.kind %} — {{ item.kind }}{% endif %}</h3></a>
+        {% if item.photo %}<img src="{{ item.photo.url }}" alt="" style="width:100%; height:160px; object-fit:cover; border-radius:10px; border:1px solid var(--border);">{% endif %}
+        <div class="muted" style="margin-top:6px;">Группа: {{ item.get_group_display }}</div>
+        <div class="muted">Ккал: {{ item.kcal }} · Б: {{ item.proteins }} · Ж: {{ item.fats }} · У: {{ item.carbs }}</div>
 
-  {% if page_obj.object_list %}
-    <ul>
-      {% for item in page_obj.object_list %}
-        <li>
-          <a href="{% url 'products:detail' slug=item.slug %}">
-            {% if item.photo %}<img src="{{ item.photo.url }}" alt="{{ item.name }}" width="80">{% endif %}
-            {{ item.name }}{% if item.kind %} — {{ item.kind }}{% endif %}
-          </a>
-          <div>Ккал: {{ item.kcal }} • Б: {{ item.proteins }} • Ж: {{ item.fats }} • У: {{ item.carbs }}</div>
+        {% if request.user.is_authenticated %}
+          <form method="post" action="{% url 'diary:add' %}" style="margin-top:8px;">
+            {% csrf_token %}
+            <input type="hidden" name="product_id" value="{{ item.id }}">
+            <input type="hidden" name="date" value="{{ today|date:'Y-m-d' }}">
+            <button type="submit">Съел(а) сегодня</button>
+          </form>
+        {% else %}
+          <div style="margin-top:8px;">
+            <a class="btn-outline" href="{% url 'accounts:login' %}?next={{ request.get_full_path }}">Войти, чтобы отметить</a>
+          </div>
+        {% endif %}
+      </div>
+    {% empty %}
+      <p>Ничего не найдено.</p>
+    {% endfor %}
+  </div>
 
-          {% if request.user.is_authenticated %}
-            <form method="post" action="{% url 'diary:add' %}" style="margin-top:6px;">
-              {% csrf_token %}
-              <input type="hidden" name="product_id" value="{{ item.id }}">
-              <input type="hidden" name="date" value="{{ today|date:'Y-m-d' }}">
-              <button type="submit">Съел(а) сегодня</button>
-            </form>
-          {% else %}
-            <div style="margin-top:6px;">
-              <a href="{% url 'accounts:login' %}?next={{ request.get_full_path }}">Войдите</a>, чтобы отметить.
-            </div>
-          {% endif %}
-      </li>
-      {% endfor %}
-    </ul>
-
-    <div style="margin-top:1rem;">
-      {% if page_obj.has_previous %}
-        <a href="?q={{ q }}&cat={{ current_cat }}&page={{ page_obj.previous_page_number }}">« Назад</a>
-      {% endif %}
-      Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
-      {% if page_obj.has_next %}
-        <a href="?q={{ q }}&cat={{ current_cat }}&page={{ page_obj.next_page_number }}">Вперёд »</a>
-      {% endif %}
-    </div>
-  {% else %}
-    <p>Ничего не найдено.</p>
-  {% endif %}
-</body>
-</html>
+  <div class="flex" style="margin-top:12px; align-items:center;">
+    {% if page_obj.has_previous %}
+      <a class="btn-outline" href="?q={{ q }}&cat={{ current_cat }}&page={{ page_obj.previous_page_number }}">« Назад</a>
+    {% endif %}
+    <div class="muted" style="padding:0 8px;">Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</div>
+    {% if page_obj.has_next %}
+      <a class="btn-outline" href="?q={{ q }}&cat={{ current_cat }}&page={{ page_obj.next_page_number }}">Вперёд »</a>
+    {% endif %}
+  </div>
+{% endblock %}

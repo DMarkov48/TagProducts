@@ -1,30 +1,42 @@
-<!doctype html>
-<html lang="ru">
-<head><meta charset="utf-8"><title>Лента</title></head>
-<body>
-  <p><a href="/">← На главную</a> | <a href="{% url 'social:search' %}">Найти пользователей</a> | <a href="{% url 'social:following' %}">Мои подписки</a></p>
-  <h1>Лента</h1>
-  {% if events %}
-    <ul>
+{% extends "base.html" %}
+{% block title %}Лента{% endblock %}
+
+{% block topbar %}
+  <div class="container" style="padding:10px 16px; border-top:1px solid var(--border); background:#fff;">
+    <form method="get" class="flex" style="align-items:center;">
+      <input class="input" style="max-width:360px;" type="text" name="q" placeholder="Искать пользователя (перейдёт в поиск)">
+      <input class="input input-inline" type="date" name="date" value="{{ date_q }}">
+      <button type="submit">Показать</button>
+      <a class="btn-outline" href="{% url 'social:following' %}">Мои подписки</a>
+    </form>
+  </div>
+  <script>
+    // перенаправим на страницу поиска пользователей при вводе q
+    (function(){
+      const form = document.currentScript.previousElementSibling;
+      form.addEventListener('submit', function(e){
+        const q = form.querySelector('input[name="q"]').value.trim();
+        if(q){ e.preventDefault(); window.location.href = "{% url 'social:search' %}?q=" + encodeURIComponent(q); }
+      });
+    })();
+  </script>
+{% endblock %}
+
+{% block content %}
+  <div class="grid" style="grid-template-columns: 1fr;">
+    {% if events %}
       {% for e in events %}
-        <li>
-          <div>
-            {% if e.user.avatar %}<img src="{{ e.user.avatar.url }}" width="36" style="vertical-align:middle;">{% endif %}
-            <strong>{{ e.user.email }}</strong>
-            <small>— {{ e.created_at|date:"d.m.Y H:i" }}</small>
-          </div>
+        <div class="card">
+          <div class="muted"><strong>{{ e.user.email }}</strong> — {{ e.created_at|date:"d.m.Y H:i" }}</div>
           {% if e.type == "entry_created" %}
-            {% with p=e.payload %}
-              <div>Добавил(а) в дневник: <em>{{ p.product_name }}</em>{% if p.kind %} — {{ p.kind }}{% endif %} (дата: {{ p.date }})</div>
-            {% endwith %}
+            <div>Добавил(а): <em>{{ e.payload.product_name }}</em>{% if e.payload.kind %} — {{ e.payload.kind }}{% endif %} ({{ e.payload.date }})</div>
           {% else %}
             <div>{{ e.type }}</div>
           {% endif %}
-        </li>
+        </div>
       {% endfor %}
-    </ul>
-  {% else %}
-    <p>Здесь будет активность вас и ваших подписок.</p>
-  {% endif %}
-</body>
-</html>
+    {% else %}
+      <p>Событий нет.</p>
+    {% endif %}
+  </div>
+{% endblock %}
