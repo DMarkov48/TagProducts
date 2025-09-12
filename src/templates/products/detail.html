@@ -13,8 +13,6 @@
     <p><img src="{{ product.photo.url }}" alt="{{ product.name }}" width="240"></p>
   {% endif %}
 
-  <p><strong>Группа:</strong> {{ product.get_group_display }}</p>
-
   <p><strong>Категории:</strong>
     {% for c in product.categories.all %}
       {{ c.name }}{% if not forloop.last %}, {% endif %}

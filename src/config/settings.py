@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     'products',
     'diary',
     'social',
+    'moderation',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

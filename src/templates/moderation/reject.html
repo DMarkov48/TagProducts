@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><title>Отклонение заявки #{{ obj.id }}</title></head>
+<body>
+  <p><a href="{% url 'moderation:detail' pk=obj.id %}">← Назад</a></p>
+  <h1>Отклонить заявку #{{ obj.id }}</h1>
+  <form method="post">
+    {% csrf_token %}
+    <p>Причина (увидит автор):</p>
+    <p><textarea name="reason" rows="5" cols="60"></textarea></p>
+    <button type="submit">Отклонить</button>
+  </form>
+</body>
+</html>

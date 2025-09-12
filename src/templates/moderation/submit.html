@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><title>Предложить продукт</title></head>
+<body>
+  <p><a href="/">← На главную</a> | <a href="{% url 'products:list' %}">Каталог</a></p>
+  <h1>Предложить продукт</h1>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <p>{{ form.name.label_tag }} {{ form.name }}</p>
+    <p>{{ form.kind.label_tag }} {{ form.kind }}</p>
+    <p>{{ form.photo.label_tag }} {{ form.photo }}</p>
+    <p>{{ form.kcal.label_tag }} {{ form.kcal }}</p>
+    <p>{{ form.proteins.label_tag }} {{ form.proteins }}</p>
+    <p>{{ form.fats.label_tag }} {{ form.fats }}</p>
+    <p>{{ form.carbs.label_tag }} {{ form.carbs }}</p>
+    <p>{{ form.categories_text.label_tag }} {{ form.categories_text }}</p>
+    <p>{{ form.comment.label_tag }} {{ form.comment }}</p>
+    <button type="submit">Отправить</button>
+  </form>
+</body>
+</html>

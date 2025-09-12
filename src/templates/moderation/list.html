@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><title>Модерация заявок</title></head>
+<body>
+  <p><a href="/">← На главную</a> | <a href="?status=pending">На рассмотрении</a> | <a href="?status=approved">Одобрено</a> | <a href="?status=rejected">Отклонено</a></p>
+  <h1>Заявки ({{ status }})</h1>
+  {% if rows %}
+    <ul>
+      {% for r in rows %}
+        <li>
+          <a href="{% url 'moderation:detail' pk=r.id %}">
+            {{ r.name }}{% if r.kind %} — {{ r.kind }}{% endif %} ({{ r.get_status_display }})
+          </a>
+          — {{ r.user.email }} — {{ r.created_at|date:"d.m.Y H:i" }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Нет заявок.</p>
+  {% endif %}
+</body>
+</html>
