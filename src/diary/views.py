@@ -1,4 +1,5 @@
 import datetime
+import calendar
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
@@ -6,6 +7,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from .models import DiaryEntry
 from .services import ensure_challenge_for, get_progress
+from django.db.models import Count
 
 @login_required
 def join_challenge(request):
@@ -84,3 +86,71 @@ def diary_view(request):
         "days_total": days_total,
     }
     return render(request, "diary/index.html", ctx)
+
+@login_required
+def month_view(request):
+    """
+    Календарь на месяц с количеством записей по дням.
+    GET-параметры:
+      - year: YYYY
+      - month: 1..12
+    По умолчанию — текущий месяц.
+    """
+    today = datetime.date.today()
+    year = int(request.GET.get("year", today.year))
+    month = int(request.GET.get("month", today.month))
+
+    # Границы месяца
+    first_day = datetime.date(year, month, 1)
+    last_day = datetime.date(year, month, calendar.monthrange(year, month)[1])
+
+    # Собираем количество записей по дням
+    counts = (
+        DiaryEntry.objects
+        .filter(user=request.user, date__gte=first_day, date__lte=last_day)
+        .values("date")
+        .annotate(n=Count("id"))
+    )
+    # Превратим в словарь: {date: n}
+    per_day = {row["date"]: row["n"] for row in counts}
+
+    # Сетка календаря: список недель, в каждой 7 дат (или None для пустых мест)
+    cal = calendar.Calendar(firstweekday=0)
+    weeks = []
+    week = []
+    for d in cal.itermonthdates(year, month):
+        # itermonthdates выдаёт и хвосты соседних месяцев — их помечаем None
+        if d.month != month:
+            week.append(None)
+        else:
+            week.append(d)
+        if len(week) == 7:
+            weeks.append(week)
+            week = []
+    if week:
+        while len(week) < 7:
+            week.append(None)
+        weeks.append(week)
+
+    unique_count, target, days_elapsed, days_total = get_progress(request.user)
+
+    # Даты для переключателей
+    prev_month = (first_day - datetime.timedelta(days=1)).replace(day=1)
+    next_month = (last_day + datetime.timedelta(days=1)).replace(day=1)
+
+    ctx = {
+        "year": year,
+        "month": month,
+        "weeks": weeks,
+        "per_day": per_day,
+        "unique_count": unique_count,
+        "target": target,
+        "days_elapsed": days_elapsed,
+        "days_total": days_total,
+        "prev_year": prev_month.year,
+        "prev_month": prev_month.month,
+        "next_year": next_month.year,
+        "next_month": next_month.month,
+        "today": today,
+    }
+    return render(request, "diary/month.html", ctx)

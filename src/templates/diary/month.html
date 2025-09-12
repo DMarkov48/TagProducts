@@ -1,0 +1,72 @@
+{% load diary_extras %}
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Календарь — {{ month }}.{{ year }}</title>
+  <style>
+    table { border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 8px; width: 120px; height: 80px; vertical-align: top; }
+    .muted { color: #999; }
+    .count { display:inline-block; padding:2px 6px; border:1px solid #ccc; border-radius:10px; font-size:12px; }
+    .today { outline: 2px solid #000; }
+    .daynum { font-weight: bold; }
+  </style>
+</head>
+<body>
+  <p><a href="/">← На главную</a> | <a href="{% url 'diary:index' %}">Список за дату</a></p>
+
+  <h1>Календарь за {{ month }}.{{ year }}</h1>
+
+  <p><strong>Прогресс:</strong> {{ unique_count }}/{{ target }} • 
+     <strong>Дни участия:</strong> {{ days_elapsed }}/{{ days_total }}</p>
+
+  <p>
+    <a href="{% url 'diary:month' %}?year={{ prev_year }}&month={{ prev_month }}">« Предыдущий</a>
+    |
+    <a href="{% url 'diary:month' %}?year={{ next_year }}&month={{ next_month }}">Следующий »</a>
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Вс</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for week in weeks %}
+        <tr>
+          {% for d in week %}
+            {% if d %}
+              <td class="{% if d == today %}today{% endif %}">
+                <div class="daynum">{{ d.day }}</div>
+                <div>
+                  {% if per_day.d %}
+                    <!-- это не сработает; оставляем нормальный доступ: -->
+                  {% endif %}
+                  {% with n=per_day|get_item:d %}
+                    {% if n %}
+                      <div class="count">{{ n }} шт.</div>
+                    {% else %}
+                      <div class="muted">нет записей</div>
+                    {% endif %}
+                  {% endwith %}
+                </div>
+                <div style="margin-top:6px;">
+                  <a href="{% url 'diary:index' %}?date={{ d|date:'Y-m-d' }}">Открыть день</a>
+                </div>
+              </td>
+            {% else %}
+              <td class="muted">—</td>
+            {% endif %}
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p style="margin-top:1rem;">
+    <a href="{% url 'diary:month' %}?year={{ today|date:'Y' }}&month={{ today|date:'n' }}">Сегодня</a>
+  </p>
+</body>
+</html>
