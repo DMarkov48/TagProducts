@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><title>Каталог продуктов</title></head>
+<body>
+  <h1>Каталог продуктов</h1>
+
+  <form method="get" style="margin-bottom: 1rem;">
+    <input type="text" name="q" placeholder="Поиск по названию" value="{{ q }}">
+    <select name="cat">
+      <option value="">Все категории</option>
+      {% for c in categories %}
+        <option value="{{ c.slug }}" {% if current_cat == c.slug %}selected{% endif %}>{{ c.name }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Найти</button>
+  </form>
+
+  {% if page_obj.object_list %}
+    <ul>
+      {% for item in page_obj.object_list %}
+        <li>
+          <a href="{% url 'products:detail' slug=item.slug %}">
+            {% if item.photo %}<img src="{{ item.photo.url }}" alt="{{ item.name }}" width="80">{% endif %}
+            {{ item.name }}
+          </a>
+          <div>Ккал: {{ item.kcal }} • Б: {{ item.proteins }} • Ж: {{ item.fats }} • У: {{ item.carbs }}</div>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <div style="margin-top:1rem;">
+      {% if page_obj.has_previous %}
+        <a href="?q={{ q }}&cat={{ current_cat }}&page={{ page_obj.previous_page_number }}">« Назад</a>
+      {% endif %}
+      Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+      {% if page_obj.has_next %}
+        <a href="?q={{ q }}&cat={{ current_cat }}&page={{ page_obj.next_page_number }}">Вперёд »</a>
+      {% endif %}
+    </div>
+  {% else %}
+    <p>Ничего не найдено.</p>
+  {% endif %}
+</body>
+</html>

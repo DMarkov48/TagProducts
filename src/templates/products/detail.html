@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><title>{{ product.name }}</title></head>
+<body>
+  <p><a href="{% url 'products:list' %}">← К каталогу</a></p>
+  <h1>{{ product.name }}</h1>
+  {% if product.photo %}
+    <p><img src="{{ product.photo.url }}" alt="{{ product.name }}" width="240"></p>
+  {% endif %}
+  <p><strong>Вид:</strong> {{ product.get_kind_display }}</p>
+  <p><strong>Категории:</strong>
+    {% for c in product.categories.all %}
+      {{ c.name }}{% if not forloop.last %}, {% endif %}
+    {% empty %} — {% endfor %}
+  </p>
+  <p><strong>Пищевая ценность на 100г:</strong></p>
+  <ul>
+    <li>Калории: {{ product.kcal }}</li>
+    <li>Белки: {{ product.proteins }}</li>
+    <li>Жиры: {{ product.fats }}</li>
+    <li>Углеводы: {{ product.carbs }}</li>
+  </ul>
+
+  <!-- Позже тут появится кнопка «Съел(а) сегодня» и выбор даты -->
+</body>
+</html>
