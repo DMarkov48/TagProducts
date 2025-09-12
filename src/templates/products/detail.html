@@ -1,18 +1,28 @@
 <!doctype html>
 <html lang="ru">
-<head><meta charset="utf-8"><title>{{ product.name }}</title></head>
+<head>
+  <meta charset="utf-8">
+  <title>{{ product.name }}{% if product.kind %} — {{ product.kind }}{% endif %}</title>
+</head>
 <body>
   <p><a href="{% url 'products:list' %}">← К каталогу</a></p>
-  <h1>{{ product.name }}</h1>
+
+  <h1>{{ product.name }}{% if product.kind %} — {{ product.kind }}{% endif %}</h1>
+
   {% if product.photo %}
     <p><img src="{{ product.photo.url }}" alt="{{ product.name }}" width="240"></p>
   {% endif %}
-  <p><strong>Вид:</strong> {{ product.get_kind_display }}</p>
+
+  <p><strong>Группа:</strong> {{ product.get_group_display }}</p>
+
   <p><strong>Категории:</strong>
     {% for c in product.categories.all %}
       {{ c.name }}{% if not forloop.last %}, {% endif %}
-    {% empty %} — {% endfor %}
+    {% empty %}
+      — 
+    {% endfor %}
   </p>
+
   <p><strong>Пищевая ценность на 100г:</strong></p>
   <ul>
     <li>Калории: {{ product.kcal }}</li>
@@ -21,6 +31,25 @@
     <li>Углеводы: {{ product.carbs }}</li>
   </ul>
 
-  <!-- Позже тут появится кнопка «Съел(а) сегодня» и выбор даты -->
+  <hr>
+
+  {% if request.user.is_authenticated %}
+    <h3>Отметить в дневнике</h3>
+    <form method="post" action="{% url 'diary:add' %}">
+      {% csrf_token %}
+      <input type="hidden" name="product_id" value="{{ product.id }}">
+      <p>
+        Дата: <input type="date" name="date" value="{{ today|date:'Y-m-d' }}">
+        <small>(оставьте как есть, чтобы отметить сегодня)</small>
+      </p>
+      <p>Количество, г (необязательно): <input type="number" name="amount_grams" min="1" step="1"></p>
+      <p>Заметка (необязательно): <input type="text" name="note" maxlength="240"></p>
+      <button type="submit">Съел(а)</button>
+    </form>
+    <p><a href="{% url 'diary:index' %}">Перейти в дневник</a></p>
+  {% else %}
+    <p><a href="{% url 'accounts:login' %}?next={{ request.path }}">Войдите</a>, чтобы отмечать продукты в дневнике.</p>
+  {% endif %}
+
 </body>
 </html>

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><title>Дневник</title></head>
+<body>
+  <h1>Дневник</h1>
+
+  <p><strong>Прогресс:</strong> {{ unique_count }}/{{ target }} уникальных продуктов</p>
+  <p><strong>Дни участия:</strong> {{ days_elapsed }}/{{ days_total }}</p>
+
+  <p>
+    <a href="{% url 'diary:join' %}">Вступить в проект</a>
+    <!-- кнопка просто создаёт челлендж, если его ещё нет -->
+  </p>
+
+  <form method="get">
+    <label>Дата:
+      <input type="date" name="date" value="{{ current_date|date:'Y-m-d' }}">
+    </label>
+    <button type="submit">Показать</button>
+  </form>
+
+  <h2>Записи за {{ current_date|date:'d.m.Y' }}</h2>
+
+  {% if entries %}
+    <ul>
+      {% for e in entries %}
+        <li>
+          {% if e.product.photo %}<img src="{{ e.product.photo.url }}" width="60">{% endif %}
+          {{ e.product.name }}{% if e.product.kind %} — {{ e.product.kind }}{% endif %}
+          {% if e.amount_grams %} ({{ e.amount_grams }} г){% endif %}
+          {% if e.note %} — {{ e.note }}{% endif %}
+          <form method="post" action="{% url 'diary:delete' entry_id=e.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit">Удалить</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>На эту дату записей нет.</p>
+  {% endif %}
+
+  <p><a href="/">← На главную</a></p>
+</body>
+</html>

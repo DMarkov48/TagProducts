@@ -1,6 +1,7 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404
 from .models import Product, Category
+import datetime
 
 def product_list(request):
     q = request.GET.get("q", "").strip()
@@ -25,4 +26,5 @@ def product_list(request):
 
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug)
-    return render(request, "products/detail.html", {"product": product})
+    today = datetime.date.today()
+    return render(request, "products/detail.html", {"product": product, "today": today})
