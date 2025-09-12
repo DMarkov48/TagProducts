@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><title>Мои подписки</title></head>
+<body>
+  <p><a href="/">← На главную</a> | <a href="{% url 'social:search' %}">Найти пользователей</a> | <a href="{% url 'social:feed' %}">Лента</a></p>
+  <h1>Мои подписки</h1>
+  {% if rows %}
+    <ul>
+      {% for r in rows %}
+        <li>
+          {% if r.followee.avatar %}<img src="{{ r.followee.avatar.url }}" width="40">{% endif %}
+          {{ r.followee.email }}
+          <form method="post" action="{% url 'social:unfollow' user_id=r.followee.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit">Отписаться</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Вы ни на кого не подписаны.</p>
+  {% endif %}
+</body>
+</html>

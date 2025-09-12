@@ -1,30 +1,45 @@
-import datetime
 import calendar
+import datetime
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
-from django.shortcuts import redirect, render, get_object_or_404
+from django.db.models import Count
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+
 from .models import DiaryEntry
 from .services import ensure_challenge_for, get_progress
-from django.db.models import Count
+from products.models import Product
+from social.models import Event
+
 
 @login_required
 def join_challenge(request):
+    """
+    Создаёт челлендж пользователю, если его ещё нет,
+    и возвращает на страницу дневника.
+    """
     ensure_challenge_for(request.user)
     messages.success(request, "Вы вступили в проект! Удачи на пути к 400 продуктам.")
     return redirect("diary:index")
 
+
 @login_required
 def add_entry(request):
-    """Добавление записи в дневник (через POST). Ожидает product_id и опционально date."""
+    """
+    Добавление записи в дневник (через POST).
+    Ожидает: product_id (обязательно), date (YYYY-MM-DD, опционально),
+    amount_grams (опционально), note (опционально).
+    При успехе создаёт событие для ленты (Event).
+    """
     if request.method != "POST":
         return redirect("diary:index")
 
     product_id = request.POST.get("product_id")
-    date_str = request.POST.get("date")  # YYYY-MM-DD
+    date_str = request.POST.get("date")
     amount = request.POST.get("amount_grams")
-    note = request.POST.get("note", "").strip()
+    note = (request.POST.get("note") or "").strip()
 
     if not product_id:
         messages.error(request, "Не указан продукт.")
@@ -36,34 +51,55 @@ def add_entry(request):
         messages.error(request, "Неверная дата.")
         return redirect("diary:index")
 
+    # гарантируем наличие челленджа
     ensure_challenge_for(request.user)
 
     try:
-        DiaryEntry.objects.create(
+        entry = DiaryEntry.objects.create(
             user=request.user,
             product_id=product_id,
             date=date,
             amount_grams=int(amount) if amount else None,
-            note=note
+            note=note,
+        )
+        # создаём событие ленты
+        p = Product.objects.get(id=product_id)
+        Event.objects.create(
+            user=request.user,
+            type="entry_created",
+            payload={
+                "product_id": p.id,
+                "product_name": p.name,
+                "kind": p.kind,
+                "date": date.isoformat(),
+            },
         )
         messages.success(request, f"Добавлено на {date.isoformat()}.")
     except IntegrityError:
+        # запись такого же продукта на ту же дату уже есть
         messages.info(request, "Этот продукт уже отмечен на выбранную дату.")
 
     next_url = request.META.get("HTTP_REFERER") or reverse("diary:index")
     return redirect(next_url)
 
+
 @login_required
-def delete_entry(request, entry_id):
+def delete_entry(request, entry_id: int):
+    """
+    Удаляет запись из дневника текущего пользователя.
+    """
     entry = get_object_or_404(DiaryEntry, id=entry_id, user=request.user)
     entry.delete()
     messages.info(request, "Запись удалена.")
     return redirect("diary:index")
 
+
 @login_required
 def diary_view(request):
-    """Главная страница дневника: прогресс и список записей за выбранную дату."""
-    # дата из GET, по умолчанию — сегодня
+    """
+    Главная страница дневника: показывает прогресс и список записей за выбранную дату.
+    GET ?date=YYYY-MM-DD — опционально.
+    """
     date_str = request.GET.get("date")
     try:
         current_date = datetime.date.fromisoformat(date_str) if date_str else datetime.date.today()
@@ -72,10 +108,12 @@ def diary_view(request):
 
     unique_count, target, days_elapsed, days_total = get_progress(request.user)
 
-    entries = (DiaryEntry.objects
-               .filter(user=request.user, date=current_date)
-               .select_related("product")
-               .order_by("product__name", "product__kind"))
+    entries = (
+        DiaryEntry.objects
+        .filter(user=request.user, date=current_date)
+        .select_related("product")
+        .order_by("product__name", "product__kind")
+    )
 
     ctx = {
         "current_date": current_date,
@@ -86,6 +124,7 @@ def diary_view(request):
         "days_total": days_total,
     }
     return render(request, "diary/index.html", ctx)
+
 
 @login_required
 def month_view(request):
@@ -100,30 +139,25 @@ def month_view(request):
     year = int(request.GET.get("year", today.year))
     month = int(request.GET.get("month", today.month))
 
-    # Границы месяца
+    # границы месяца
     first_day = datetime.date(year, month, 1)
     last_day = datetime.date(year, month, calendar.monthrange(year, month)[1])
 
-    # Собираем количество записей по дням
+    # количество записей по дням
     counts = (
         DiaryEntry.objects
         .filter(user=request.user, date__gte=first_day, date__lte=last_day)
         .values("date")
         .annotate(n=Count("id"))
     )
-    # Превратим в словарь: {date: n}
     per_day = {row["date"]: row["n"] for row in counts}
 
-    # Сетка календаря: список недель, в каждой 7 дат (или None для пустых мест)
-    cal = calendar.Calendar(firstweekday=0)
+    # сетка календаря (недели по 7 дней, пустые слоты = None)
+    cal = calendar.Calendar(firstweekday=0)  # 0 = понедельник
     weeks = []
     week = []
     for d in cal.itermonthdates(year, month):
-        # itermonthdates выдаёт и хвосты соседних месяцев — их помечаем None
-        if d.month != month:
-            week.append(None)
-        else:
-            week.append(d)
+        week.append(d if d.month == month else None)
         if len(week) == 7:
             weeks.append(week)
             week = []
@@ -134,7 +168,7 @@ def month_view(request):
 
     unique_count, target, days_elapsed, days_total = get_progress(request.user)
 
-    # Даты для переключателей
+    # даты для переключателей
     prev_month = (first_day - datetime.timedelta(days=1)).replace(day=1)
     next_month = (last_day + datetime.timedelta(days=1)).replace(day=1)
 
