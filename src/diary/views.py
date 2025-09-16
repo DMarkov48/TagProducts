@@ -31,7 +31,7 @@ def add_entry(request):
     Добавление записи в дневник (через POST).
     Ожидает: product_id (обязательно), date (YYYY-MM-DD, опционально),
     amount_grams (опционально), note (опционально).
-    При успехе создаёт событие для ленты (Event).
+    При успехе создает событие для ленты (Event) с product_slug.
     """
     if request.method != "POST":
         return redirect("diary:index")
@@ -62,13 +62,14 @@ def add_entry(request):
             amount_grams=int(amount) if amount else None,
             note=note,
         )
-        # создаём событие ленты
+        # событие ленты
         p = Product.objects.get(id=product_id)
         Event.objects.create(
             user=request.user,
             type="entry_created",
             payload={
                 "product_id": p.id,
+                "product_slug": p.slug,  # <<< добавили slug
                 "product_name": p.name,
                 "kind": p.kind,
                 "date": date.isoformat(),
@@ -76,7 +77,6 @@ def add_entry(request):
         )
         messages.success(request, f"Добавлено на {date.isoformat()}.")
     except IntegrityError:
-        # запись такого же продукта на ту же дату уже есть
         messages.info(request, "Этот продукт уже отмечен на выбранную дату.")
 
     next_url = request.META.get("HTTP_REFERER") or reverse("diary:index")
@@ -86,8 +86,11 @@ def add_entry(request):
 @login_required
 def delete_entry(request, entry_id: int):
     """
-    Удаляет запись из дневника текущего пользователя.
+    Удаляет запись из дневника текущего пользователя (ТОЛЬКО POST).
     """
+    if request.method != "POST":
+        messages.error(request, "Удаление разрешено только через POST.")
+        return redirect("diary:index")
     entry = get_object_or_404(DiaryEntry, id=entry_id, user=request.user)
     entry.delete()
     messages.info(request, "Запись удалена.")

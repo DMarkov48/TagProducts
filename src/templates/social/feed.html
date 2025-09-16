@@ -27,7 +27,9 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="mb-0">Лента</h1>
     <div>
-      <a href="{% url 'social:following' %}" class="btn btn-sm btn-outline-secondary">Мои подписки</a>
+      <a href="{% url 'social:feed' %}" class="btn btn-sm {% if not request.GET.filter %}btn-primary{% else %}btn-outline-primary{% endif %}">Все события</a>
+      <a href="{% url 'social:feed' %}?filter=subs" class="btn btn-sm {% if request.GET.filter == 'subs' %}btn-primary{% else %}btn-outline-primary{% endif %}">Мои подписки</a>
+      <a href="{% url 'social:following' %}" class="btn btn-sm btn-outline-secondary">Мои подписки (список)</a>
     </div>
   </div>
 
@@ -41,10 +43,15 @@
           </div>
           {% if e.type == "entry_created" %}
             <p class="mb-1">
-              Добавил продукт 
-              <a href="{% url 'products:detail' slug=e.payload.product_id %}">
-                {{ e.payload.product_name }}{% if e.payload.kind %} — {{ e.payload.kind }}{% endif %}
-              </a>
+              Добавил продукт
+              {% if e.payload.product_slug %}
+                <a href="{% url 'products:detail' slug=e.payload.product_slug %}">
+                  {{ e.payload.product_name }}{% if e.payload.kind %} — {{ e.payload.kind }}{% endif %}
+                </a>
+              {% else %}
+                <span>{{ e.payload.product_name }}{% if e.payload.kind %} — {{ e.payload.kind }}{% endif %}</span>
+              {% endif %}
+              ({{ e.payload.date }})
             </p>
           {% endif %}
         </div>

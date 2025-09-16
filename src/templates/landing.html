@@ -1,10 +1,22 @@
 {% extends "base.html" %}
 {% load static %}
+
 {% block title %}О проекте — 400 продуктов{% endblock %}
 
+{% block head %}
+<style>
+  .masthead.hero {
+    min-height: 60vh;
+    background-image: var(--hero);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<!-- Герой-секция -->
-<header class="masthead" style="min-height:60vh;">
+<header class="masthead hero" style="--hero: url('{% static 'theme/img/bg-masthead.jpg' %}');">
   <div class="container px-4">
     <div class="row gx-4 justify-content-center">
       <div class="col-lg-8 text-center text-white glass">
@@ -20,7 +32,6 @@
   </div>
 </header>
 
-<!-- Короткая поясняющая секция -->
 <section class="py-5">
   <div class="container">
     <div class="row g-4">

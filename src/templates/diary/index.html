@@ -19,17 +19,28 @@
           Записи за {{ current_date|date:"d.m.Y" }}
         </div>
         <div class="card-body">
+          <form method="get" class="row g-2 mb-3">
+            <div class="col-auto">
+              <input class="form-control" type="date" name="date" value="{{ current_date|date:'Y-m-d' }}">
+            </div>
+            <div class="col-auto">
+              <button class="btn btn-outline-primary" type="submit">Показать</button>
+            </div>
+          </form>
+
           {% if entries %}
             <ul class="list-group">
               {% for e in entries %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <span>{{ e.product.name }}{% if e.product.kind %} — {{ e.product.kind }}{% endif %}</span>
-                  <div>
-                    {% if e.amount_grams %}
-                      <span class="badge text-bg-light">{{ e.amount_grams }} г</span>
-                    {% endif %}
-                    <a href="{% url 'diary:delete' e.id %}" class="btn btn-sm btn-outline-danger">Удалить</a>
-                  </div>
+                  <span>
+                    {{ e.product.name }}{% if e.product.kind %} — {{ e.product.kind }}{% endif %}
+                    {% if e.amount_grams %}<span class="badge text-bg-light ms-2">{{ e.amount_grams }} г</span>{% endif %}
+                    {% if e.note %}<span class="text-muted ms-2">— {{ e.note }}</span>{% endif %}
+                  </span>
+                  <form method="post" action="{% url 'diary:delete' e.id %}" class="m-0">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-danger">Удалить</button>
+                  </form>
                 </li>
               {% endfor %}
             </ul>
@@ -45,7 +56,9 @@
       <div class="card">
         <div class="card-body text-center">
           <h5 class="card-title">Календарь</h5>
-          <a href="{% url 'diary:month' %}?year={{ current_date.year }}&month={{ current_date.month }}" class="btn btn-outline-primary">Открыть месяц</a>
+          <a href="{% url 'diary:month' %}?year={{ current_date.year }}&month={{ current_date.month }}" class="btn btn-outline-primary">
+            Открыть месяц
+          </a>
         </div>
       </div>
     </div>

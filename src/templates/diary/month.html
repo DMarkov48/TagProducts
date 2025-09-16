@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load utils_extras %}
 {% block title %}Календарь{% endblock %}
 
 {% block content %}
@@ -21,12 +22,14 @@
         <tr>
           {% for d in week %}
             {% if d %}
-              <td class="{% if d == today %}table-primary{% endif %}">
-                <a href="{% url 'diary:index' %}?date={{ d|date:'Y-m-d' }}">{{ d.day }}</a><br>
-                {% if d in per_day %}
-                  <span class="badge bg-success">{{ per_day.d }}</span>
-                {% endif %}
-              </td>
+              {% with cnt=per_day|get_item:d %}
+                <td class="{% if d == today %}table-primary{% endif %}">
+                  <a href="{% url 'diary:index' %}?date={{ d|date:'Y-m-d' }}">{{ d.day }}</a><br>
+                  {% if cnt %}
+                    <span class="badge bg-success">{{ cnt }}</span>
+                  {% endif %}
+                </td>
+              {% endwith %}
             {% else %}
               <td class="bg-light"></td>
             {% endif %}

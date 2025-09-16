@@ -4,9 +4,9 @@
 {% block topbar %}
 <div class="bg-light border-top">
   <div class="container py-2">
-    <form method="get" class="row g-2 align-items-center">
+    <form method="get" class="row g-2 align-items-center" action="{% url 'social:search' %}">
       <div class="col-md-8">
-        <input class="form-control" type="text" name="q" placeholder="Имя, фамилия или e-mail" value="{{ q }}">
+        <input class="form-control" type="text" name="q" placeholder="Имя, фамилия, отчество или e-mail" value="{{ q }}">
       </div>
       <div class="col-md-4">
         <button class="btn btn-primary w-100" type="submit">Искать</button>
@@ -18,7 +18,13 @@
 
 {% block content %}
 <div class="container py-4">
-  <h1 class="mb-3">Найти пользователей</h1>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Поиск пользователей</h1>
+    <div>
+      <a href="{% url 'social:feed' %}" class="btn btn-sm btn-outline-secondary">Лента</a>
+      <a href="{% url 'social:following' %}" class="btn btn-sm btn-outline-primary">Мои подписки</a>
+    </div>
+  </div>
 
   {% if q %}
     <p class="text-muted">Запрос: «{{ q }}»</p>
